@@ -39,7 +39,7 @@ public class ArthasResultUtil {
     /**
      * 解析命令和结果
      */
-    public String parseResultByCommand(String command, Result<Object> objectResult, Long now) {
+    public String parseResultByCommand(String command, Result<Object> objectResult) {
         if (command.isEmpty() || objectResult == null) return null;
 
         String result;

@@ -140,7 +140,6 @@ public class ArthasRequestSocket {
     public void getTimePercentiles() throws IOException {
         JSONObject resultJson = new JSONObject();
         ArthasRequestImpl arthasRequestImplTemp = (ArthasRequestImpl) ApplicationContextUtil.getBean("arthasRequestImpl");
-        long now = System.currentTimeMillis();
 
         for (String command : commandList) {
             arthasRequestBody.setAction(EXEC_ACTION);
@@ -149,7 +148,7 @@ public class ArthasRequestSocket {
 
             //如果请求结果异常跳出循环
             if (!objectResult.isSuccess()) break;
-            String result = arthasResultUtil.parseResultByCommand(command, objectResult, now);
+            String result = arthasResultUtil.parseResultByCommand(command, objectResult);
 
             // 判断是否为线程相关的数据
             if (command.contains("thread --state")) {
