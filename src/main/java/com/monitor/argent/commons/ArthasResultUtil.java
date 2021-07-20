@@ -3,7 +3,6 @@ package com.monitor.argent.commons;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.monitor.argent.entity.EchartsLineStackSeriesBean;
 import com.monitor.argent.entity.JvmInfoBean;
 import com.monitor.argent.entity.ThreadBlockingBean;
 import com.monitor.argent.entity.ThreadStateBean;
@@ -16,12 +15,8 @@ import java.util.*;
 @Component
 public class ArthasResultUtil {
 
-    public static ThreadStateBean threadStateBean = new ThreadStateBean();
     public static JvmInfoBean jvmInfoBean = new JvmInfoBean();
     public static ThreadBlockingBean threadBlockingBean = new ThreadBlockingBean();
-    public static LinkedHashSet<String> legendData = new LinkedHashSet<>();
-
-    public SimpleDateFormat time = new SimpleDateFormat("HH:mm:ss");
     public static List<String> jvmInfoType = new ArrayList<>();
 
     static {
@@ -47,8 +42,7 @@ public class ArthasResultUtil {
     public String parseResultByCommand(String command, Result<Object> objectResult, Long now) {
         if (command.isEmpty() || objectResult == null) return null;
 
-        String result = null;
-        ThreadStateBean threadStateBean;
+        String result;
         //根据不同命令提取信息
         switch (command) {
             case "thread -i 1000 -n 5":
@@ -59,26 +53,14 @@ public class ArthasResultUtil {
                 result = JSON.toJSONString(jvmInfoBean);
                 break;
             case "thread --state BLOCKED":
-                threadStateBean = this.convertToThreadStateBean(objectResult);
-                threadStateBean.getxAxis().add(time.format(new Date(now)));
-                result = JSON.toJSONString(threadStateBean);
-                break;
-            case "thread --state WAITING":
-                threadStateBean = this.convertToThreadStateBean(objectResult);
-                threadStateBean.getxAxis().add(time.format(new Date(now)));
-                result = JSON.toJSONString(threadStateBean);
-            case "thread --state RUNNABLE":
-                threadStateBean = this.convertToThreadStateBean(objectResult);
-                threadStateBean.getxAxis().add(time.format(new Date(now)));
-                result = JSON.toJSONString(threadStateBean);
-                break;
             case "thread –-state TIMED_WAITING":
-                threadStateBean = this.convertToThreadStateBean(objectResult);
-                threadStateBean.getxAxis().add(time.format(new Date(now)));
-                result = JSON.toJSONString(threadStateBean);
+            case "thread --state WAITING":
+            case "thread --state RUNNABLE":
+                JSONArray jsonArray = this.convertToThreadStateBean(objectResult);
+                result = JSON.toJSONString(jsonArray);
                 break;
             default:
-                break;
+                throw new IllegalStateException("Unexpected value: " + command);
         }
         return result;
     }
@@ -107,7 +89,7 @@ public class ArthasResultUtil {
     /**
      * 线程状态查询结果转换
      */
-    public ThreadStateBean convertToThreadStateBean(Result<Object> objectResult) {
+    public JSONArray convertToThreadStateBean(Result<Object> objectResult) {
         if (objectResult == null || !objectResult.isSuccess()) {
             return null;
         }
@@ -116,34 +98,14 @@ public class ArthasResultUtil {
         if (jsonArray.isEmpty()) {
             return null;
         }
+        JSONArray threadStats = null;
         for (Object o : jsonArray) {
             JSONObject tempJSON = (JSONObject) JSONObject.toJSON(o);
             if (tempJSON.getString("type").equals("thread")) {
-                JSONArray busyArray = tempJSON.getJSONArray("threadStats");
-                for (Object object : busyArray) {
-                    JSONObject temp = (JSONObject) JSONObject.toJSON(object);
-                    String threadName = temp.getString("name");
-                    int time = temp.getIntValue("time");
-                    System.out.println("time= " + time);
-                    // 如果是新的线程名，添加
-                    if (!legendData.contains(threadName)) {
-                        legendData.add(threadName);
-                        EchartsLineStackSeriesBean echartsLineStackSeriesBean = new EchartsLineStackSeriesBean();
-                        echartsLineStackSeriesBean.setName(threadName);
-                        echartsLineStackSeriesBean.setData(time);
-                        LinkedList<EchartsLineStackSeriesBean> tempList = threadStateBean.getSeries();
-                        tempList.add(echartsLineStackSeriesBean);
-                        threadStateBean.setSeries(tempList);
-                    } else {
-                        LinkedList<EchartsLineStackSeriesBean> tempList = threadStateBean.getSeries();
-                        Optional<EchartsLineStackSeriesBean> beanObject = tempList.stream().filter(e -> e.getName().equals(threadName)).findFirst();
-                        beanObject.ifPresent(nameBean -> nameBean.setData(time));
-                    }
-                }
+                threadStats = tempJSON.getJSONArray("threadStats");
             }
         }
-        threadStateBean.setLegendData(legendData);
-        return threadStateBean;
+        return threadStats;
     }
 
     /**

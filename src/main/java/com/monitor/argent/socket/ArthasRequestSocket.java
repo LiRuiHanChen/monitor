@@ -1,5 +1,6 @@
 package com.monitor.argent.socket;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.monitor.argent.commons.ArthasResultUtil;
 import com.monitor.argent.config.ApplicationContextUtil;
@@ -134,7 +135,7 @@ public class ArthasRequestSocket {
      * @throws IOException
      */
 //    ExecutorService service = Executors.newFixedThreadPool(5);
-    @Scheduled(cron = "0/2 * * * * ?")
+    @Scheduled(cron = "0/5 * * * * ?")
 //    @Async
     public void getTimePercentiles() throws IOException {
         JSONObject resultJson = new JSONObject();
@@ -145,9 +146,23 @@ public class ArthasRequestSocket {
             arthasRequestBody.setAction(EXEC_ACTION);
             arthasRequestBody.setCommand(command);
             Result<Object> objectResult = arthasRequestImplTemp.sendArthasPostRequest(ip + ":" + port, url, null, arthasRequestBody);
+
             //如果请求结果异常跳出循环
             if (!objectResult.isSuccess()) break;
             String result = arthasResultUtil.parseResultByCommand(command, objectResult, now);
+
+            // 判断是否为线程相关的数据
+            if (command.contains("thread --state")) {
+                String tempCommand = resultJson.getString("thread --state");
+                //还未添加的数据
+                if (StringUtils.isEmpty(tempCommand)) {
+                    resultJson.put("thread --state", result);
+                } else {
+                    JSONArray temp = JSONArray.parseArray(tempCommand);
+                    temp.addAll(JSONArray.parseArray(result));
+                    resultJson.put("thread --state", temp.toJSONString());
+                }
+            }
             resultJson.put(command, result);
         }
         // 修正格式发送
