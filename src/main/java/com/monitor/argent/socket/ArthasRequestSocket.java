@@ -10,7 +10,6 @@ import com.monitor.argent.service.ArthasRequestImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,12 +19,8 @@ import javax.annotation.PostConstruct;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Component
 @ServerEndpoint(value = "/arthas_request")
@@ -55,7 +50,7 @@ public class ArthasRequestSocket {
     private static final String WAITING_THREAD_STATE_COMMAND = "thread --state WAITING";
     private static final String RUNNABLE_THREAD_STATE_COMMAND = "thread --state RUNNABLE";
     private static final String TIMED_WAIT_THREAD_STATE_COMMAND = "thread –-state TIMED_WAITING";
-    private static final String JVM_INFO_COMMAND = "jvm";
+    private static final String VM_OPTION_PRINT_GC = "vmoption PrintGC";
     private static final String VERSION = "version";
 
     private static final String url = "/api";
@@ -63,6 +58,8 @@ public class ArthasRequestSocket {
     private static String port;
     private static ArthasRequestBody arthasRequestBody = new ArthasRequestBody();
     public static List<String> commandList = new ArrayList<>();
+    public HashMap<String, Boolean> arthasPathMap = new HashMap<>();
+    public Boolean arthasStateFlag = false;
 
     @PostConstruct
     public void init() {
@@ -78,13 +75,14 @@ public class ArthasRequestSocket {
      *
      * @return
      */
+    // TODO 调试GC信息
     public static List<String> loadCommand() {
         commandList.add(BUSY_THREAD_INFO_COMMAND);
         commandList.add(BLOCK_THREAD_INFO_COMMAND);
         commandList.add(WAITING_THREAD_STATE_COMMAND);
         commandList.add(RUNNABLE_THREAD_STATE_COMMAND);
         commandList.add(TIMED_WAIT_THREAD_STATE_COMMAND);
-        commandList.add(JVM_INFO_COMMAND);
+//        commandList.add(VM_OPTION_PRINT_GC);
         return commandList;
     }
 
@@ -134,42 +132,45 @@ public class ArthasRequestSocket {
      *
      * @throws IOException
      */
-//    ExecutorService service = Executors.newFixedThreadPool(5);
-    @Scheduled(cron = "0/5 * * * * ?")
-//    @Async
+    @Scheduled(cron = "0/3 * * * * ?")
     public void getTimePercentiles() throws IOException {
-        JSONObject resultJson = new JSONObject();
-        ArthasRequestImpl arthasRequestImplTemp = (ArthasRequestImpl) ApplicationContextUtil.getBean("arthasRequestImpl");
+        if (arthasPathMap.containsKey(ip + ":" + port)) {
+            // 如果为true说明已经成功链接
+            if (arthasPathMap.get(ip + ":" + port)) {
 
-        for (String command : commandList) {
-            arthasRequestBody.setAction(EXEC_ACTION);
-            arthasRequestBody.setCommand(command);
-            Result<Object> objectResult = arthasRequestImplTemp.sendArthasPostRequest(ip + ":" + port, url, null, arthasRequestBody);
+                JSONObject resultJson = new JSONObject();
+                ArthasRequestImpl arthasRequestImplTemp = (ArthasRequestImpl) ApplicationContextUtil.getBean("arthasRequestImpl");
 
-            //如果请求结果异常跳出循环
-            if (!objectResult.isSuccess()) break;
-            String result = arthasResultUtil.parseResultByCommand(command, objectResult);
+                for (String command : commandList) {
+                    arthasRequestBody.setAction(EXEC_ACTION);
+                    arthasRequestBody.setCommand(command);
+                    Result<Object> objectResult = arthasRequestImplTemp.sendArthasPostRequest(ip + ":" + port, url, null, arthasRequestBody);
 
-            // 判断是否为线程相关的数据
-            if (command.contains("thread --state")) {
-                String tempCommand = resultJson.getString("thread --state");
-                //还未添加的数据
-                if (StringUtils.isEmpty(tempCommand)) {
-                    resultJson.put("thread --state", result);
-                } else {
-                    JSONArray temp = JSONArray.parseArray(tempCommand);
-                    temp.addAll(JSONArray.parseArray(result));
-                    resultJson.put("thread --state", temp.toJSONString());
+                    //如果请求结果异常跳出循环
+                    if (!objectResult.isSuccess()) break;
+                    String result = arthasResultUtil.parseResultByCommand(command, objectResult);
+                    // 判断是否为线程相关的数据
+                    if (command.contains("thread --state")) {
+                        String tempCommand = resultJson.getString("thread --state");
+                        //还未添加的数据
+                        if (StringUtils.isEmpty(tempCommand)) {
+                            resultJson.put("thread --state", result);
+                        } else {
+                            JSONArray temp = JSONArray.parseArray(tempCommand);
+                            temp.addAll(JSONArray.parseArray(result));
+                            resultJson.put("thread --state", temp.toJSONString());
+                        }
+                    }
+                    resultJson.put(command, result);
                 }
+                // 修正格式发送
+                if (!resultJson.isEmpty()) {
+                    session.getBasicRemote().sendText(resultJson.toJSONString());
+                }
+                //清空
+                resultJson.clear();
             }
-            resultJson.put(command, result);
         }
-        // 修正格式发送
-        if (!resultJson.isEmpty()) {
-            session.getBasicRemote().sendText(resultJson.toJSONString());
-        }
-        //清空
-        resultJson.clear();
     }
 
 }

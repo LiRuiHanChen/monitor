@@ -3,38 +3,14 @@ package com.monitor.argent.commons;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.monitor.argent.entity.JvmInfoBean;
 import com.monitor.argent.entity.ThreadBlockingBean;
-import com.monitor.argent.entity.ThreadStateBean;
 import com.monitor.argent.model.Result;
 import org.springframework.stereotype.Component;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 @Component
 public class ArthasResultUtil {
 
-    public static JvmInfoBean jvmInfoBean = new JvmInfoBean();
     public static ThreadBlockingBean threadBlockingBean = new ThreadBlockingBean();
-    public static List<String> jvmInfoType = new ArrayList<>();
-
-    static {
-        jvmInfoType = getJvmInfoTypeList();
-    }
-
-    private static List<String> getJvmInfoTypeList() {
-        ArthasResultUtil.jvmInfoType.add("RUNTIME");
-        ArthasResultUtil.jvmInfoType.add("CLASS-LOADING");
-        ArthasResultUtil.jvmInfoType.add("COMPILATION");
-        ArthasResultUtil.jvmInfoType.add("GARBAGE-COLLECTORS");
-        ArthasResultUtil.jvmInfoType.add("MEMORY-MANAGERS");
-        ArthasResultUtil.jvmInfoType.add("MEMORY");
-        ArthasResultUtil.jvmInfoType.add("OPERATING-SYSTEM");
-        ArthasResultUtil.jvmInfoType.add("THREAD");
-        ArthasResultUtil.jvmInfoType.add("FILE-DESCRIPTOR");
-        return ArthasResultUtil.jvmInfoType;
-    }
 
     /**
      * 解析命令和结果
@@ -47,10 +23,6 @@ public class ArthasResultUtil {
         switch (command) {
             case "thread -i 1000 -n 5":
                 result = this.convertToBusyThread(objectResult).toJSONString();
-                break;
-            case "jvm":
-                JvmInfoBean jvmInfoBean = this.convertToJvmInfoBean(objectResult);
-                result = JSON.toJSONString(jvmInfoBean);
                 break;
             case "thread --state BLOCKED":
             case "thread –-state TIMED_WAITING":
@@ -106,49 +78,6 @@ public class ArthasResultUtil {
             }
         }
         return threadStats;
-    }
-
-    /**
-     * 获取jvm信息
-     */
-    public JvmInfoBean convertToJvmInfoBean(Result<Object> objectResult) {
-        if (objectResult == null || !objectResult.isSuccess()) {
-            return null;
-        }
-
-        JSONArray jsonArray = getArthasResponseResults(objectResult);
-        if (jsonArray.isEmpty()) {
-            return null;
-        }
-        for (Object o : jsonArray) {
-            JSONObject tempJSON = (JSONObject) JSONObject.toJSON(o);
-            if (tempJSON.getString("type").equals("jvm")) {
-                JSONObject jvmInfoObject = (JSONObject) tempJSON.get("jvmInfo");
-                for (String jvmType : jvmInfoType) {
-                    switch (jvmType) {
-                        case "RUNTIME":
-                            jvmInfoBean.setRuntimeList(jvmInfoObject.getJSONArray(jvmType));
-                        case "CLASS-LOADING":
-                            jvmInfoBean.setClassLoadingList(jvmInfoObject.getJSONArray(jvmType));
-                        case "COMPILATION":
-                            jvmInfoBean.setCompilationList(jvmInfoObject.getJSONArray(jvmType));
-                        case "GARBAGE-COLLECTORS":
-                            jvmInfoBean.setGarbageCollectorsList(jvmInfoObject.getJSONArray(jvmType));
-                        case "MEMORY-MANAGERS":
-                            jvmInfoBean.setMemoryManagersList(jvmInfoObject.getJSONArray(jvmType));
-                        case "MEMORY":
-                            jvmInfoBean.setMemoryList(jvmInfoObject.getJSONArray(jvmType));
-                        case "OPERATING-SYSTEM":
-                            jvmInfoBean.setOperatingSystemList(jvmInfoObject.getJSONArray(jvmType));
-                        case "THREAD":
-                            jvmInfoBean.setThreadInfoList(jvmInfoObject.getJSONArray(jvmType));
-                        case "FILE-DESCRIPTOR":
-                            jvmInfoBean.setFileDescriptorList(jvmInfoObject.getJSONArray(jvmType));
-                    }
-                }
-            }
-        }
-        return jvmInfoBean;
     }
 
     /**
