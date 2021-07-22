@@ -51,6 +51,8 @@ public class ArthasRequestSocket {
     private static final String RUNNABLE_THREAD_STATE_COMMAND = "thread --state RUNNABLE";
     private static final String TIMED_WAIT_THREAD_STATE_COMMAND = "thread –-state TIMED_WAITING";
     private static final String VM_OPTION_PRINT_GC = "vmoption PrintGC";
+    // 刷新实时数据的时间间隔 (ms)，默认5000ms   -n  刷新实时数据的次数
+    private static final String DASHBOARD_COMMAND = "dashboard -i 1000 -n 1";
     private static final String VERSION = "version";
 
     private static final String url = "/api";
@@ -59,7 +61,6 @@ public class ArthasRequestSocket {
     private static ArthasRequestBody arthasRequestBody = new ArthasRequestBody();
     public static List<String> commandList = new ArrayList<>();
     public HashMap<String, Boolean> arthasPathMap = new HashMap<>();
-    public Boolean arthasStateFlag = false;
 
     @PostConstruct
     public void init() {
@@ -82,7 +83,7 @@ public class ArthasRequestSocket {
         commandList.add(WAITING_THREAD_STATE_COMMAND);
         commandList.add(RUNNABLE_THREAD_STATE_COMMAND);
         commandList.add(TIMED_WAIT_THREAD_STATE_COMMAND);
-//        commandList.add(VM_OPTION_PRINT_GC);
+        commandList.add(DASHBOARD_COMMAND);
         return commandList;
     }
 

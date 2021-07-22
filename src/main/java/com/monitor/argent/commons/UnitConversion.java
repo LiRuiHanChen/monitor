@@ -1,8 +1,8 @@
 package com.monitor.argent.commons;
 
+import com.alibaba.fastjson.JSONObject;
+import com.monitor.argent.entity.MemoryBean;
 import org.springframework.stereotype.Component;
-
-import java.text.DecimalFormat;
 
 @Component
 public class UnitConversion {
@@ -10,13 +10,39 @@ public class UnitConversion {
     /**
      * byte转换为MB
      */
-    public double byteToGB(long byteValue) {
+    public int byteToMB(int byteValue) {
         if (byteValue >= 1024 * 1024) {
-            DecimalFormat format = new DecimalFormat("###.00");
-            String value = format.format(byteValue / (1024.0 * 1024.0));
-            return Double.parseDouble(value);
+            return (int) (byteValue / (1024.0 * 1024.0));
         }
         return 0;
     }
 
+    /**
+     * 计算内存使用率
+     */
+    public String getUsage(int total, int used) {
+        return null;
+    }
+
+    /**
+     * 转换对象中属性的存储单位为MB
+     *
+     * @param memoryBean
+     * @return
+     */
+    public JSONObject memoryBeanAttributeUnitConversion(MemoryBean memoryBean) {
+        int max = memoryBean.getMax();
+        int total = memoryBean.getTotal();
+        int used = memoryBean.getUsed();
+        if (max > 0) {
+            memoryBean.setMax(byteToMB(max));
+        }
+        if (total > 0) {
+            memoryBean.setTotal(byteToMB(total));
+        }
+        if (used > 0) {
+            memoryBean.setUsed(byteToMB(used));
+        }
+        return (JSONObject) JSONObject.toJSON(memoryBean);
+    }
 }
