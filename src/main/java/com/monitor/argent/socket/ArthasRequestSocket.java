@@ -54,9 +54,12 @@ public class ArthasRequestSocket {
     // 刷新实时数据的时间间隔 (ms)，默认5000ms   -n  刷新实时数据的次数
     private static final String DASHBOARD_COMMAND = "dashboard -i 1000 -n 1";
     private static final String VERSION = "version";
+    // 火焰图，希望profiler执行 N 秒自动结束，可以用 --duration 参数指定
+    private static final String PROFILER_DURATION_COMMAND = "profiler start --duration";
 
     private static final String url = "/api";
     private static String ip;
+    public int durationTime;
     private static String port;
     private static ArthasRequestBody arthasRequestBody = new ArthasRequestBody();
     public static List<String> commandList = new ArrayList<>();
@@ -92,10 +95,23 @@ public class ArthasRequestSocket {
         if (!StringUtils.isEmpty(message)) {
             JSONObject messageJsonObject = JSONObject.parseObject(message);
             if (messageJsonObject != null) {
-                ip = messageJsonObject.getString("ip").trim();
-                port = messageJsonObject.getString("port").trim();
-                arthasRequestBody.setAction("exec");
-                arthasRequestBody.setCommand(VERSION);
+                String key = messageJsonObject.getString("key");
+                switch (key) {
+                    case "version":
+                        JSONObject versionObject = messageJsonObject.getJSONObject("value");
+                        ip = versionObject.getString("ip").trim();
+                        port = versionObject.getString("port").trim();
+                        arthasRequestBody.setAction("exec");
+                        arthasRequestBody.setCommand(VERSION);
+                        break;
+                    case "profiler start --duration":
+                        durationTime = (int) messageJsonObject.get("value");
+                        // TODO 处理火焰图
+                        if (durationTime > 0) {
+                            loadArthasProfiler(arthasRequestBody, key);
+                        }
+                        break;
+                }
             }
         }
     }
@@ -171,6 +187,22 @@ public class ArthasRequestSocket {
                 //清空
                 resultJson.clear();
             }
+        }
+    }
+
+    public void loadArthasProfiler(ArthasRequestBody arthasRequestBody, String key) {
+        arthasRequestBody.setAction("exec");
+        // command举例: "profiler start --duration 1 --file /xxx/monitor/src/main/resources/static/html/xxx.html"
+        //指定绝对路径
+        String classPath = System.getProperty("user.dir") + "/src/main/resources/static/output/";
+        arthasRequestBody.setCommand(PROFILER_DURATION_COMMAND + " " + durationTime + " " + "--file" + " " + classPath + System.currentTimeMillis() + ".html ");
+        ArthasRequestImpl arthasRequestImplTemp = (ArthasRequestImpl) ApplicationContextUtil.getBean("arthasRequestImpl");
+        Result<Object> objectResult = arthasRequestImplTemp.sendArthasPostRequest(ip + ":" + port, url, null, arthasRequestBody);
+        String arthasOutPutFilePath = arthasResultUtil.parseResultByCommand(key, objectResult);
+        try {
+            session.getBasicRemote().sendText(arthasOutPutFilePath);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

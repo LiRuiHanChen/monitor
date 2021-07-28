@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.monitor.argent.entity.MemoryBean;
 import com.monitor.argent.entity.ThreadBlockingBean;
 import com.monitor.argent.model.Result;
+import com.monitor.argent.socket.ArthasRequestSocket;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -40,10 +41,56 @@ public class ArthasResultUtil {
                 JSONArray jsonArray = this.convertToThreadStateBean(objectResult);
                 result = JSON.toJSONString(jsonArray);
                 break;
+            case "profiler start --duration":
+                int durationTime = ArthasRequestSocket.arthasRequestSocket.durationTime;
+                long execTime = System.currentTimeMillis();
+                result = this.loadProfilerFile(execTime, durationTime, objectResult);
+                break;
             default:
                 throw new IllegalStateException("Unexpected value: " + command);
         }
         return result;
+    }
+
+    /**
+     * 解析火焰图生成的HTML文件
+     * 根据response中的文件路径去查找文件
+     * 根据HTML文件生成火焰图
+     */
+    public String loadProfilerFile(long execTime, int durationTime, Result<Object> objectResult) {
+        if (objectResult == null || !objectResult.isSuccess()) {
+            return null;
+        }
+
+        JSONArray jsonArray = getArthasResponseResults(objectResult);
+        if (jsonArray.isEmpty()) return null;
+
+        String outputFile = null;
+
+        // 查找文件路径
+        for (Object object : jsonArray) {
+            JSONObject tempJSON = (JSONObject) JSONObject.toJSON(object);
+            if (tempJSON.isEmpty()) break;
+            if (tempJSON.getString("type").equals("profiler")) {
+                outputFile = tempJSON.getString("outputFile");
+                break;
+            }
+        }
+        // 如果达到durationTime的时间，给前端发送通知
+        while (true) {
+            long now = System.currentTimeMillis();
+            // 持续时间以后
+            if (now > execTime + (durationTime * 1000L)) {
+                JSONObject jsonObject = new JSONObject();
+                // 截取html文件名
+                if (outputFile != null) {
+                    int index = outputFile.lastIndexOf("/");
+                    String fileName = outputFile.substring(index + 1);
+                    jsonObject.put("profiler start --duration", "/static/output/" +fileName);
+                }
+                return jsonObject.toJSONString();
+            }
+        }
     }
 
     /**
