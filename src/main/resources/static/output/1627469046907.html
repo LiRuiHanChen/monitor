@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Tree view</title>
+<meta charset="utf-8"/>
+<style>
+body {
+    font-family: Arial;
+}
+ul.tree li {
+    list-style-type: none;
+    position: relative;
+}
+ul.tree ul {
+    margin-left: 20px; padding-left: 0;
+}
+ul.tree li ul {
+    display: none;
+}
+ul.tree li.open > ul {
+    display: block;
+}
+ul.tree li div:before {
+    height: 1em;
+    padding:0 .1em;
+    font-size: .8em;
+    display: block;
+    position: absolute;
+    left: -1.3em;
+    top: .2em;
+}
+ul.tree li > div:not(:nth-last-child(2)):before {
+    content: '+';
+}
+ul.tree li.open > div:not(:nth-last-child(2)):before {
+    content: '-';
+}
+.sc {
+    text-decoration: underline;
+    text-decoration-color: black;
+    font-weight: bold;
+    background-color: #D9D9D9;
+}
+.green {
+    color: #32c832;
+}
+.aqua {
+    color: #32a5a5;
+}
+.brown {
+    color: #be5a00;
+}
+.yellow {
+    color: #afaf32;
+}
+.red {
+    color: #c83232;
+}
+ul.tree li > div {
+    display: inline;
+    cursor: pointer;
+    color: black;
+    text-decoration: none;
+}
+</style>
+<script>
+function treeView(opt) {
+    var tree = document.querySelectorAll('ul.tree div:not(:last-child)');
+    for(var i = 0; i < tree.length; i++){
+        var parent = tree[i].parentElement;
+        var classList = parent.classList;
+        if(opt == 0) {
+            classList.add('open');
+        } else {
+            classList.remove('open');
+        }
+    }
+}
+function openParent(p,t) {
+    if(p.parentElement.classList.contains("tree")) {
+        return;
+    }
+    p.parentElement.classList.add('open');
+    openParent(p.parentElement,t);
+}
+function search() {
+    var tree = document.querySelectorAll('ul.tree span');
+    var check = document.getElementById('check');
+    for(var i = 0; i < tree.length; i++){
+        tree[i].classList.remove('sc');
+        if(tree[i].innerHTML.includes(document.getElementById("search").value)) {
+            tree[i].classList.add('sc');
+            openParent(tree[i].parentElement,tree);
+        }
+    }
+}
+function openUL(n) {
+    var children = n.children;
+    if(children.length == 1) {
+        openNode(children[0]);
+    }
+}
+function openNode(n) {
+    var children = n.children;
+    for(var i = 0; i < children.length; i++){
+        if(children[i].nodeName == 'UL') {
+            n.classList.add('open');
+            openUL(children[i]);
+        }
+    }
+}
+function addClickActions() {
+var tree = document.querySelectorAll('ul.tree div:not(:last-child)');
+for(var i = 0; i < tree.length; i++){
+    tree[i].addEventListener('click', function(e) {
+        var parent = e.target.parentElement;
+        var classList = parent.classList;
+        if(classList.contains("open")) {
+            classList.remove('open');
+            var opensubs = parent.querySelectorAll(':scope .open');
+            for(var i = 0; i < opensubs.length; i++){
+                opensubs[i].classList.remove('open');
+            }
+        } else {
+            if(e.altKey) {
+                classList.add('open');
+                var opensubs = parent.querySelectorAll('li');
+                for(var i = 0; i < opensubs.length; i++){
+                    opensubs[i].classList.add('open');
+                }
+            } else {
+                openNode(parent);
+            }
+        }
+    });
+}
+}
+</script>
+</head>
+<body>
+<div style="padding-left: 25px;">Call tree view, total samples: 10 </div>
+<div style="padding-left: 25px;"><button type='button' onclick='treeView(0)'>++</button><button type='button' onclick='treeView(1)'>--</button>
+<input type='text' id='search' value='' size='35' onkeypress="if(event.keyCode == 13) document.getElementById('searchBtn').click()">
+<button type='button' id='searchBtn' onclick='search()'>search</button></div>
+<ul class="tree">
+<li><div>[0] 80.00% 8 self: 0.00% 0</div><span class="green"> java/lang/Thread.run</span>
+<ul>
+<li><div>[1] 40.00% 4 self: 0.00% 0</div><span class="green"> java/util/concurrent/ThreadPoolExecutor$Worker.run</span>
+<ul>
+<li><div>[2] 40.00% 4 self: 0.00% 0</div><span class="green"> java/util/concurrent/ThreadPoolExecutor.runWorker</span>
+<ul>
+<li><div>[3] 40.00% 4 self: 0.00% 0</div><span class="green"> java/util/concurrent/ScheduledThreadPoolExecutor$ScheduledFutureTask.run</span>
+<ul>
+<li><div>[4] 40.00% 4 self: 0.00% 0</div><span class="green"> java/util/concurrent/ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201</span>
+<ul>
+<li><div>[5] 40.00% 4 self: 0.00% 0</div><span class="green"> java/util/concurrent/FutureTask.run</span>
+<ul>
+<li><div>[6] 40.00% 4 self: 0.00% 0</div><span class="green"> java/util/concurrent/FutureTask.run$$$capture</span>
+<ul>
+<li><div>[7] 40.00% 4 self: 0.00% 0</div><span class="green"> java/util/concurrent/Executors$RunnableAdapter.call</span>
+<ul>
+<li><div>[8] 20.00% 2 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/shell/system/impl/ProcessImpl$CommandProcessTask.run</span>
+<ul>
+<li><div>[9] 20.00% 2 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/shell/command/impl/AnnotatedCommandImpl$ProcessHandler.handle</span>
+<ul>
+<li><div>[10] 20.00% 2 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/shell/command/impl/AnnotatedCommandImpl$ProcessHandler.handle</span>
+<ul>
+<li><div>[11] 20.00% 2 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/shell/command/impl/AnnotatedCommandImpl.access$100</span>
+<ul>
+<li><div>[12] 20.00% 2 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/shell/command/impl/AnnotatedCommandImpl.process</span>
+<ul>
+<li><div>[13] 10.00% 1 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/command/monitor200/DashboardCommand.process</span>
+<ul>
+<li><div>[14] 10.00% 1 self: 0.00% 0</div><span class="green"> java/util/Timer.&lt;init&gt;</span>
+<ul>
+<li><div>[15] 10.00% 1 self: 0.00% 0</div><span class="green"> java/lang/Thread.start</span>
+<ul>
+<li><div>[16] 10.00% 1 self: 0.00% 0</div><span class="green"> java/lang/Thread.start0</span>
+<ul>
+<li><div>[17] 10.00% 1 self: 0.00% 0</div><span class="red"> JVM_StartThread</span>
+<ul>
+<li><div>[18] 10.00% 1 self: 0.00% 0</div><span class="yellow"> os::create_thread(Thread*, os::ThreadType, unsigned long)</span>
+<ul>
+<li><div>[19] 10.00% 1 self: 10.00% 1</div><span class="red"> __bsdthread_create</span>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+<li><div>[13] 10.00% 1 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/command/monitor200/ProfilerCommand.process</span>
+<ul>
+<li><div>[14] 10.00% 1 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/command/monitor200/ProfilerCommand.execute</span>
+<ul>
+<li><div>[15] 10.00% 1 self: 0.00% 0</div><span class="green"> one/profiler/AsyncProfiler.execute</span>
+<ul>
+<li><div>[16] 10.00% 1 self: 0.00% 0</div><span class="green"> one/profiler/AsyncProfiler.execute0</span>
+<ul>
+<li><div>[17] 10.00% 1 self: 0.00% 0</div><span class="red"> Java_one_profiler_AsyncProfiler_execute0</span>
+<ul>
+<li><div>[18] 10.00% 1 self: 10.00% 1</div><span class="red"> __close_nocancel</span>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+<li><div>[8] 20.00% 2 self: 0.00% 0</div><span class="green"> org/springframework/scheduling/concurrent/ReschedulingRunnable.run</span>
+<ul>
+<li><div>[9] 20.00% 2 self: 0.00% 0</div><span class="green"> org/springframework/scheduling/support/DelegatingErrorHandlingRunnable.run</span>
+<ul>
+<li><div>[10] 20.00% 2 self: 0.00% 0</div><span class="green"> org/springframework/scheduling/support/ScheduledMethodRunnable.run</span>
+<ul>
+<li><div>[11] 20.00% 2 self: 0.00% 0</div><span class="green"> java/lang/reflect/Method.invoke</span>
+<ul>
+<li><div>[12] 20.00% 2 self: 0.00% 0</div><span class="green"> sun/reflect/DelegatingMethodAccessorImpl.invoke</span>
+<ul>
+<li><div>[13] 20.00% 2 self: 0.00% 0</div><span class="green"> sun/reflect/GeneratedMethodAccessor34.invoke</span>
+<ul>
+<li><div>[14] 20.00% 2 self: 0.00% 0</div><span class="green"> com/monitor/argent/socket/ArthasRequestSocket.getTimePercentiles</span>
+<ul>
+<li><div>[15] 10.00% 1 self: 0.00% 0</div><span class="green"> com/monitor/argent/commons/ArthasResultUtil.parseResultByCommand</span>
+<ul>
+<li><div>[16] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/fastjson/JSON.toJSONString</span>
+<ul>
+<li><div>[17] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/fastjson/JSON.toJSONString</span>
+<ul>
+<li><div>[18] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/fastjson/JSON.toJSONString</span>
+<ul>
+<li><div>[19] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/fastjson/serializer/JSONSerializer.write</span>
+<ul>
+<li><div>[20] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/fastjson/serializer/ListSerializer.write</span>
+<ul>
+<li><div>[21] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/fastjson/serializer/MapSerializer.write</span>
+<ul>
+<li><div>[22] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/fastjson/serializer/MapSerializer.write</span>
+<ul>
+<li><div>[23] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/fastjson/serializer/BigDecimalCodec.write</span>
+<ul>
+<li><div>[24] 10.00% 1 self: 0.00% 0</div><span class="green"> java/math/BigDecimal.toString</span>
+<ul>
+<li><div>[25] 10.00% 1 self: 10.00% 1</div><span class="green"> java/math/BigDecimal.layoutChars</span>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+<li><div>[15] 10.00% 1 self: 0.00% 0</div><span class="green"> com/monitor/argent/service/ArthasRequestImpl.sendArthasPostRequest</span>
+<ul>
+<li><div>[16] 10.00% 1 self: 0.00% 0</div><span class="green"> com/monitor/argent/commons/ArthasHttpRequest.sendArthasPostRequest</span>
+<ul>
+<li><div>[17] 10.00% 1 self: 0.00% 0</div><span class="green"> com/monitor/argent/commons/HttpRequestUtil.sendPostDataByJson</span>
+<ul>
+<li><div>[18] 10.00% 1 self: 0.00% 0</div><span class="green"> com/monitor/argent/commons/HttpRequestUtil.getIntegerStringMap</span>
+<ul>
+<li><div>[19] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/http/impl/client/CloseableHttpClient.execute</span>
+<ul>
+<li><div>[20] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/http/impl/client/CloseableHttpClient.execute</span>
+<ul>
+<li><div>[21] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/http/impl/client/InternalHttpClient.doExecute</span>
+<ul>
+<li><div>[22] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/http/impl/execchain/RedirectExec.execute</span>
+<ul>
+<li><div>[23] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/http/impl/execchain/RetryExec.execute</span>
+<ul>
+<li><div>[24] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/http/impl/execchain/ProtocolExec.execute</span>
+<ul>
+<li><div>[25] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/http/impl/execchain/MainClientExec.execute</span>
+<ul>
+<li><div>[26] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/http/protocol/HttpRequestExecutor.execute</span>
+<ul>
+<li><div>[27] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/http/protocol/HttpRequestExecutor.doSendRequest</span>
+<ul>
+<li><div>[28] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/http/impl/conn/CPoolProxy.sendRequestHeader</span>
+<ul>
+<li><div>[29] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/http/impl/DefaultBHttpClientConnection.sendRequestHeader</span>
+<ul>
+<li><div>[30] 10.00% 1 self: 10.00% 1</div><span class="green"> org/apache/http/impl/io/AbstractMessageWriter.write</span>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+<li><div>[1] 30.00% 3 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/util/concurrent/FastThreadLocalRunnable.run</span>
+<ul>
+<li><div>[2] 30.00% 3 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/util/internal/ThreadExecutorMap$2.run</span>
+<ul>
+<li><div>[3] 30.00% 3 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/util/concurrent/SingleThreadEventExecutor$4.run</span>
+<ul>
+<li><div>[4] 30.00% 3 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/nio/NioEventLoop.run</span>
+<ul>
+<li><div>[5] 20.00% 2 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/nio/NioEventLoop.processSelectedKeys</span>
+<ul>
+<li><div>[6] 20.00% 2 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/nio/NioEventLoop.processSelectedKeysOptimized</span>
+<ul>
+<li><div>[7] 20.00% 2 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/nio/NioEventLoop.processSelectedKey</span>
+<ul>
+<li><div>[8] 20.00% 2 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/nio/AbstractNioMessageChannel$NioMessageUnsafe.read</span>
+<ul>
+<li><div>[9] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/DefaultChannelPipeline.fireChannelRead</span>
+<ul>
+<li><div>[10] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/AbstractChannelHandlerContext.invokeChannelRead</span>
+<ul>
+<li><div>[11] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/AbstractChannelHandlerContext.invokeChannelRead</span>
+<ul>
+<li><div>[12] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/DefaultChannelPipeline$HeadContext.channelRead</span>
+<ul>
+<li><div>[13] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/AbstractChannelHandlerContext.fireChannelRead</span>
+<ul>
+<li><div>[14] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/AbstractChannelHandlerContext.invokeChannelRead</span>
+<ul>
+<li><div>[15] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/AbstractChannelHandlerContext.invokeChannelRead</span>
+<ul>
+<li><div>[16] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/handler/logging/LoggingHandler.channelRead</span>
+<ul>
+<li><div>[17] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/AbstractChannelHandlerContext.fireChannelRead</span>
+<ul>
+<li><div>[18] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/AbstractChannelHandlerContext.invokeChannelRead</span>
+<ul>
+<li><div>[19] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/AbstractChannelHandlerContext.invokeChannelRead</span>
+<ul>
+<li><div>[20] 10.00% 1 self: 10.00% 1</div><span class="green"> com/alibaba/arthas/deps/io/netty/bootstrap/ServerBootstrap$ServerBootstrapAcceptor.channelRead</span>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+<li><div>[9] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/socket/nio/NioServerSocketChannel.doReadMessages</span>
+<ul>
+<li><div>[10] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/util/internal/SocketUtils.accept</span>
+<ul>
+<li><div>[11] 10.00% 1 self: 0.00% 0</div><span class="green"> java/security/AccessController.doPrivileged</span>
+<ul>
+<li><div>[12] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/util/internal/SocketUtils$5.run</span>
+<ul>
+<li><div>[13] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/util/internal/SocketUtils$5.run</span>
+<ul>
+<li><div>[14] 10.00% 1 self: 0.00% 0</div><span class="green"> sun/nio/ch/ServerSocketChannelImpl.accept</span>
+<ul>
+<li><div>[15] 10.00% 1 self: 0.00% 0</div><span class="green"> sun/nio/ch/ServerSocketChannelImpl.accept</span>
+<ul>
+<li><div>[16] 10.00% 1 self: 0.00% 0</div><span class="green"> sun/nio/ch/ServerSocketChannelImpl.accept0</span>
+<ul>
+<li><div>[17] 10.00% 1 self: 0.00% 0</div><span class="red"> Java_sun_nio_ch_ServerSocketChannelImpl_accept0</span>
+<ul>
+<li><div>[18] 10.00% 1 self: 0.00% 0</div><span class="red"> NET_SockaddrToInetAddress</span>
+<ul>
+<li><div>[19] 10.00% 1 self: 0.00% 0</div><span class="red"> jni_NewObject</span>
+<ul>
+<li><div>[20] 10.00% 1 self: 0.00% 0</div><span class="red"> alloc_object(_jclass*, Thread*)</span>
+<ul>
+<li><div>[21] 10.00% 1 self: 10.00% 1</div><span class="yellow"> InstanceKlass::should_be_initialized() const</span>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+<li><div>[5] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/util/concurrent/SingleThreadEventExecutor.runAllTasks</span>
+<ul>
+<li><div>[6] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/util/concurrent/AbstractEventExecutor.safeExecute</span>
+<ul>
+<li><div>[7] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/AbstractChannelHandlerContext$7.run</span>
+<ul>
+<li><div>[8] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/AbstractChannelHandlerContext.access$600</span>
+<ul>
+<li><div>[9] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/AbstractChannelHandlerContext.invokeChannelRead</span>
+<ul>
+<li><div>[10] 10.00% 1 self: 0.00% 0</div><span class="green"> com/alibaba/arthas/deps/io/netty/channel/SimpleChannelInboundHandler.channelRead</span>
+<ul>
+<li><div>[11] 10.00% 1 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/shell/term/impl/http/HttpRequestHandler.channelRead0</span>
+<ul>
+<li><div>[12] 10.00% 1 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/shell/term/impl/http/HttpRequestHandler.channelRead0</span>
+<ul>
+<li><div>[13] 10.00% 1 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/shell/term/impl/http/api/HttpApiHandler.handle</span>
+<ul>
+<li><div>[14] 10.00% 1 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/shell/term/impl/http/api/HttpApiHandler.processRequest</span>
+<ul>
+<li><div>[15] 10.00% 1 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/shell/term/impl/http/api/HttpApiHandler.dispatchRequest</span>
+<ul>
+<li><div>[16] 10.00% 1 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/shell/term/impl/http/api/HttpApiHandler.processExecRequest</span>
+<ul>
+<li><div>[17] 10.00% 1 self: 0.00% 0</div><span class="green"> com/taobao/arthas/core/shell/term/impl/http/api/HttpApiHandler.waitForJob</span>
+<ul>
+<li><div>[18] 10.00% 1 self: 0.00% 0</div><span class="green"> java/lang/Thread.sleep</span>
+<ul>
+<li><div>[19] 10.00% 1 self: 0.00% 0</div><span class="red"> JVM_Sleep</span>
+<ul>
+<li><div>[20] 10.00% 1 self: 0.00% 0</div><span class="yellow"> os::sleep(Thread*, long, bool)</span>
+<ul>
+<li><div>[21] 10.00% 1 self: 0.00% 0</div><span class="yellow"> os::PlatformEvent::park(long)</span>
+<ul>
+<li><div>[22] 10.00% 1 self: 10.00% 1</div><span class="red"> __psynch_cvwait</span>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+<li><div>[1] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/util/threads/TaskThread$WrappingRunnable.run</span>
+<ul>
+<li><div>[2] 10.00% 1 self: 0.00% 0</div><span class="green"> java/util/concurrent/ThreadPoolExecutor$Worker.run</span>
+<ul>
+<li><div>[3] 10.00% 1 self: 0.00% 0</div><span class="green"> java/util/concurrent/ThreadPoolExecutor.runWorker</span>
+<ul>
+<li><div>[4] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/util/net/SocketProcessorBase.run</span>
+<ul>
+<li><div>[5] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/util/net/NioEndpoint$SocketProcessor.doRun</span>
+<ul>
+<li><div>[6] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/coyote/AbstractProtocol$ConnectionHandler.process</span>
+<ul>
+<li><div>[7] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/coyote/AbstractProcessorLight.process</span>
+<ul>
+<li><div>[8] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/coyote/http11/upgrade/UpgradeProcessorInternal.dispatch</span>
+<ul>
+<li><div>[9] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/server/WsHttpUpgradeHandler.upgradeDispatch</span>
+<ul>
+<li><div>[10] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/server/WsFrameServer.notifyDataAvailable</span>
+<ul>
+<li><div>[11] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/server/WsFrameServer.doOnDataAvailable</span>
+<ul>
+<li><div>[12] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/server/WsFrameServer.onDataAvailable</span>
+<ul>
+<li><div>[13] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/WsFrameBase.processInputBuffer</span>
+<ul>
+<li><div>[14] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/WsFrameBase.processData</span>
+<ul>
+<li><div>[15] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/WsFrameBase.processDataText</span>
+<ul>
+<li><div>[16] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/server/WsFrameServer.sendMessageText</span>
+<ul>
+<li><div>[17] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/WsFrameBase.sendMessageText</span>
+<ul>
+<li><div>[18] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/pojo/PojoMessageHandlerWholeBase.onMessage</span>
+<ul>
+<li><div>[19] 10.00% 1 self: 0.00% 0</div><span class="green"> java/lang/reflect/Method.invoke</span>
+<ul>
+<li><div>[20] 10.00% 1 self: 0.00% 0</div><span class="green"> sun/reflect/DelegatingMethodAccessorImpl.invoke</span>
+<ul>
+<li><div>[21] 10.00% 1 self: 0.00% 0</div><span class="green"> sun/reflect/NativeMethodAccessorImpl.invoke</span>
+<ul>
+<li><div>[22] 10.00% 1 self: 0.00% 0</div><span class="green"> sun/reflect/NativeMethodAccessorImpl.invoke0</span>
+<ul>
+<li><div>[23] 10.00% 1 self: 0.00% 0</div><span class="green"> com/monitor/argent/socket/ArthasRequestSocket.onMessage</span>
+<ul>
+<li><div>[24] 10.00% 1 self: 0.00% 0</div><span class="green"> com/monitor/argent/socket/ArthasRequestSocket.loadArthasProfiler</span>
+<ul>
+<li><div>[25] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/WsRemoteEndpointBasic.sendText</span>
+<ul>
+<li><div>[26] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/WsRemoteEndpointImplBase.sendString</span>
+<ul>
+<li><div>[27] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/WsRemoteEndpointImplBase.sendMessageBlock</span>
+<ul>
+<li><div>[28] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/WsRemoteEndpointImplBase.sendMessageBlock</span>
+<ul>
+<li><div>[29] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/WsRemoteEndpointImplBase.writeMessagePart</span>
+<ul>
+<li><div>[30] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/websocket/server/WsRemoteEndpointImplServer.doWrite</span>
+<ul>
+<li><div>[31] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/util/net/SocketWrapperBase.write</span>
+<ul>
+<li><div>[32] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/util/net/SocketWrapperBase.write</span>
+<ul>
+<li><div>[33] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/util/net/SocketWrapperBase.vectoredOperation</span>
+<ul>
+<li><div>[34] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/util/net/SocketWrapperBase$OperationState.start</span>
+<ul>
+<li><div>[35] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/util/net/NioEndpoint$NioSocketWrapper$NioOperationState.run</span>
+<ul>
+<li><div>[36] 10.00% 1 self: 0.00% 0</div><span class="green"> org/apache/tomcat/util/net/NioChannel.write</span>
+<ul>
+<li><div>[37] 10.00% 1 self: 0.00% 0</div><span class="green"> sun/nio/ch/SocketChannelImpl.write</span>
+<ul>
+<li><div>[38] 10.00% 1 self: 0.00% 0</div><span class="green"> sun/nio/ch/IOUtil.write</span>
+<ul>
+<li><div>[39] 10.00% 1 self: 0.00% 0</div><span class="green"> java/nio/Buffer.flip</span>
+<ul>
+<li><div>[40] 10.00% 1 self: 10.00% 1</div><span class="green"> I2C/C2I adapters</span>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+<li><div>[0] 20.00% 2 self: 0.00% 0</div><span class="red"> err_codes_unix</span>
+<ul>
+<li><div>[1] 20.00% 2 self: 0.00% 0</div><span class="red"> __os_ch_md_redzone_cookie</span>
+<ul>
+<li><div>[2] 20.00% 2 self: 0.00% 0</div><span class="red"> java_start(Thread*)</span>
+<ul>
+<li><div>[3] 20.00% 2 self: 0.00% 0</div><span class="yellow"> JavaThread::run()</span>
+<ul>
+<li><div>[4] 20.00% 2 self: 0.00% 0</div><span class="yellow"> JavaThread::thread_main_inner()</span>
+<ul>
+<li><div>[5] 20.00% 2 self: 0.00% 0</div><span class="yellow"> CompileBroker::compiler_thread_loop()</span>
+<ul>
+<li><div>[6] 10.00% 1 self: 0.00% 0</div><span class="yellow"> CompileBroker::invoke_compiler_on_method(CompileTask*)</span>
+<ul>
+<li><div>[7] 10.00% 1 self: 0.00% 0</div><span class="yellow"> Compiler::compile_method(ciEnv*, ciMethod*, int)</span>
+<ul>
+<li><div>[8] 10.00% 1 self: 0.00% 0</div><span class="yellow"> Compilation::Compilation(AbstractCompiler*, ciEnv*, ciMethod*, int, BufferBlob*)</span>
+<ul>
+<li><div>[9] 10.00% 1 self: 0.00% 0</div><span class="yellow"> Compilation::compile_method()</span>
+<ul>
+<li><div>[10] 10.00% 1 self: 0.00% 0</div><span class="yellow"> Compilation::compile_java_method()</span>
+<ul>
+<li><div>[11] 10.00% 1 self: 0.00% 0</div><span class="yellow"> Compilation::build_hir()</span>
+<ul>
+<li><div>[12] 10.00% 1 self: 0.00% 0</div><span class="yellow"> IR::IR(Compilation*, ciMethod*, int)</span>
+<ul>
+<li><div>[13] 10.00% 1 self: 0.00% 0</div><span class="yellow"> IRScope::IRScope(Compilation*, IRScope*, int, ciMethod*, int, bool)</span>
+<ul>
+<li><div>[14] 10.00% 1 self: 0.00% 0</div><span class="yellow"> GraphBuilder::GraphBuilder(Compilation*, IRScope*)</span>
+<ul>
+<li><div>[15] 10.00% 1 self: 0.00% 0</div><span class="yellow"> GraphBuilder::iterate_all_blocks(bool)</span>
+<ul>
+<li><div>[16] 10.00% 1 self: 0.00% 0</div><span class="yellow"> GraphBuilder::iterate_bytecodes_for_block(int)</span>
+<ul>
+<li><div>[17] 10.00% 1 self: 0.00% 0</div><span class="yellow"> GraphBuilder::invoke(Bytecodes::Code)</span>
+<ul>
+<li><div>[18] 10.00% 1 self: 0.00% 0</div><span class="yellow"> ciBytecodeStream::get_method(bool&amp;, ciSignature**)</span>
+<ul>
+<li><div>[19] 10.00% 1 self: 0.00% 0</div><span class="yellow"> ciEnv::get_method_by_index(constantPoolHandle, int, Bytecodes::Code, ciInstanceKlass*)</span>
+<ul>
+<li><div>[20] 10.00% 1 self: 0.00% 0</div><span class="yellow"> ciEnv::get_method_by_index_impl(constantPoolHandle, int, Bytecodes::Code, ciInstanceKlass*)</span>
+<ul>
+<li><div>[21] 10.00% 1 self: 0.00% 0</div><span class="yellow"> ciObjectFactory::get_metadata(Metadata*)</span>
+<ul>
+<li><div>[22] 10.00% 1 self: 0.00% 0</div><span class="yellow"> ciObjectFactory::create_new_metadata(Metadata*)</span>
+<ul>
+<li><div>[23] 10.00% 1 self: 0.00% 0</div><span class="yellow"> ciMethod::ciMethod(methodHandle, ciInstanceKlass*)</span>
+<ul>
+<li><div>[24] 10.00% 1 self: 0.00% 0</div><span class="yellow"> ciSignature::ciSignature(ciKlass*, constantPoolHandle, ciSymbol*)</span>
+<ul>
+<li><div>[25] 10.00% 1 self: 0.00% 0</div><span class="yellow"> ciEnv::get_klass_by_name_impl(ciKlass*, constantPoolHandle, ciSymbol*, bool)</span>
+<ul>
+<li><div>[26] 10.00% 1 self: 0.00% 0</div><span class="yellow"> ciObjectFactory::get_metadata(Metadata*)</span>
+<ul>
+<li><div>[27] 10.00% 1 self: 10.00% 1</div><span class="yellow"> ciObjectFactory::create_new_metadata(Metadata*)</span>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+<li><div>[6] 10.00% 1 self: 0.00% 0</div><span class="yellow"> CompileQueue::get()</span>
+<ul>
+<li><div>[7] 10.00% 1 self: 0.00% 0</div><span class="yellow"> NMethodSweeper::possibly_sweep()</span>
+<ul>
+<li><div>[8] 10.00% 1 self: 0.00% 0</div><span class="yellow"> NMethodSweeper::sweep_code_cache()</span>
+<ul>
+<li><div>[9] 10.00% 1 self: 10.00% 1</div><span class="yellow"> NMethodSweeper::process_nmethod(nmethod*)</span>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+<script>
+addClickActions();
+</script>
+</ul>
+</body>
+</html>
