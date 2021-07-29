@@ -1,9 +1,9 @@
 package com.monitor.argent.entity;
 
-import com.sun.istack.internal.NotNull;
 import org.springframework.util.StringUtils;
 
 import javax.validation.constraints.Max;
+import javax.validation.constraints.NotNull;
 
 public class ArthasRequestBody {
 
