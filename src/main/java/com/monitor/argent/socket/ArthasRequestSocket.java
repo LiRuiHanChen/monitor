@@ -111,6 +111,16 @@ public class ArthasRequestSocket {
                             loadArthasProfiler(arthasRequestBody, key);
                         }
                         break;
+                    case "ping":
+                        try {
+                            session.getBasicRemote().sendText("pong");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case "stop":
+                        this.onClose();
+                        break;
                 }
             }
         }
@@ -126,6 +136,12 @@ public class ArthasRequestSocket {
     @OnClose
     public void onClose() {
         user.remove(this);
+        try {
+            session.close();
+            arthasRequestSocket.arthasPathMap.put(ip + ":" + port, false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         logger.info("{} socket is closed", session.getId());
     }
 
@@ -145,7 +161,7 @@ public class ArthasRequestSocket {
     }
 
     /**
-     * 每2秒查一次
+     * 每3秒查一次
      *
      * @throws IOException
      */
