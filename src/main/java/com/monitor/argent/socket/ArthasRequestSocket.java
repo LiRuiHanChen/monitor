@@ -181,7 +181,7 @@ public class ArthasRequestSocket {
 
                     //如果请求结果异常跳出循环
                     if (!objectResult.isSuccess()) break;
-                    String result = arthasResultUtil.parseResultByCommand(command, objectResult);
+                    String result = arthasResultUtil.parseResultByCommand(ip, port, command, objectResult);
                     // 判断是否为线程相关的数据
                     if (command.contains("thread --state")) {
                         String tempCommand = resultJson.getString("thread --state");
@@ -210,11 +210,10 @@ public class ArthasRequestSocket {
         arthasRequestBody.setAction("exec");
         // command举例: "profiler start --duration 1 --file /xxx/monitor/src/main/resources/static/html/xxx.html"
         //指定绝对路径
-        String classPath = System.getProperty("user.dir") + "/src/main/resources/static/output/";
-        arthasRequestBody.setCommand(PROFILER_DURATION_COMMAND + " " + durationTime + " " + "--file" + " " + classPath + System.currentTimeMillis() + ".html ");
+        arthasRequestBody.setCommand(PROFILER_DURATION_COMMAND + " " + durationTime + " " + "--format html");
         ArthasRequestImpl arthasRequestImplTemp = (ArthasRequestImpl) ApplicationContextUtil.getBean("arthasRequestImpl");
         Result<Object> objectResult = arthasRequestImplTemp.sendArthasPostRequest(ip + ":" + port, url, null, arthasRequestBody);
-        String arthasOutPutFilePath = arthasResultUtil.parseResultByCommand(key, objectResult);
+        String arthasOutPutFilePath = arthasResultUtil.parseResultByCommand(ip, port, key, objectResult);
         try {
             session.getBasicRemote().sendText(arthasOutPutFilePath);
         } catch (IOException e) {

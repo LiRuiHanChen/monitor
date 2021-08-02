@@ -8,6 +8,7 @@ import com.monitor.argent.entity.ThreadBlockingBean;
 import com.monitor.argent.model.Result;
 import com.monitor.argent.socket.ArthasRequestSocket;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public class ArthasResultUtil {
     /**
      * 解析命令和结果
      */
-    public String parseResultByCommand(String command, Result<Object> objectResult) {
+    public String parseResultByCommand(String ip, String port, String command, Result<Object> objectResult) {
         if (command.isEmpty() || objectResult == null) return null;
 
         String result;
@@ -44,7 +45,7 @@ public class ArthasResultUtil {
             case "profiler start --duration":
                 int durationTime = ArthasRequestSocket.arthasRequestSocket.durationTime;
                 long execTime = System.currentTimeMillis();
-                result = this.loadProfilerFile(execTime, durationTime, objectResult);
+                result = this.loadProfilerFile(ip, port, execTime, durationTime, objectResult);
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + command);
@@ -57,7 +58,7 @@ public class ArthasResultUtil {
      * 根据response中的文件路径去查找文件
      * 根据HTML文件生成火焰图
      */
-    public String loadProfilerFile(long execTime, int durationTime, Result<Object> objectResult) {
+    public String loadProfilerFile(String ip, String port, long execTime, int durationTime, Result<Object> objectResult) {
         if (objectResult == null || !objectResult.isSuccess()) {
             return null;
         }
@@ -76,21 +77,22 @@ public class ArthasResultUtil {
                 break;
             }
         }
-        // 如果达到durationTime的时间，给前端发送通知
-        while (true) {
-            long now = System.currentTimeMillis();
-            // 持续时间以后
-            if (now > execTime + (durationTime * 1000L)) {
-                JSONObject jsonObject = new JSONObject();
-                // 截取html文件名
-                if (outputFile != null) {
+        if (!StringUtils.isEmpty(outputFile)) {
+            // 如果达到durationTime的时间，给前端发送通知
+            while (true) {
+                long now = System.currentTimeMillis();
+                // 持续时间以后
+                if (now > execTime + (durationTime * 1000L)) {
+                    JSONObject jsonObject = new JSONObject();
+                    // 截取html文件名
                     int index = outputFile.lastIndexOf("/");
                     String fileName = outputFile.substring(index + 1);
-                    jsonObject.put("profiler start --duration", "/static/output/" +fileName);
+                    jsonObject.put("profiler start --duration", ip + ":" + port + "/arthas-output/" + fileName);
+                    return jsonObject.toJSONString();
                 }
-                return jsonObject.toJSONString();
             }
         }
+        return outputFile;
     }
 
     /**
