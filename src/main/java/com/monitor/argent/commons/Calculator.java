@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.monitor.argent.commons;
 
 
 public class Calculator {

@@ -1,10 +1,11 @@
-package com.example.demo;
+package com;
 
+import com.monitor.argent.commons.Calculator;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class CalculatorTest {
+public class TestCalculator {
 
     @Test
     public void testAddFuction() {
