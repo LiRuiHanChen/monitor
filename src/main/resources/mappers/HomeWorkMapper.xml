@@ -2,10 +2,17 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.monitor.argent.dao.HomeWorkMapper">
 
-    <insert id="addHomeWorkTestCase" useGeneratedKeys="true"
+    <insert id="addHomeWorkTestCase" useGeneratedKeys="true" keyProperty="id"
             parameterType="com.monitor.argent.entity.HomeWorkRequestBean">
-        insert
-        * FROM check_homework
+        INSERT INTO check_homework
+        (subject, stage, case_name, request_body, flag, create_time, update_time)
+        VALUES (#{sub_ject,jdbcType=VARCHAR},
+                #{stage,jdbcType=VARCHAR},
+                #{case_name,jdbcType=VARCHAR},
+                #{request_body,jdbcType=VARCHAR},
+                #{flag,jdbcType=VARCHAR},
+                #{create_time,jdbcType=VARCHAR},
+                #{update_time,jdbcType=VARCHAR})
     </insert>
 
     <select id="getHomeWorkTestCase" resultType="com.monitor.argent.entity.HomeWorkResponseBody">
@@ -19,9 +26,9 @@
                 and stage=#{stage}
             </if>
             <if test="subject != null">
-                and subject=#{subject}
+                and sub_ject=#{subject}
             </if>
-            <if test="flag != null">
+            <if test="flag > 1">
                 and flag=#{flag}
             </if>
         </where>

@@ -3,19 +3,16 @@ package com.monitor.argent.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.monitor.argent.api.Code;
-import com.monitor.argent.commons.UnitConversion;
 import com.monitor.argent.entity.HomeWorkRequestBean;
 import com.monitor.argent.entity.HomeWorkResponseBody;
 import com.monitor.argent.entity.HomeWorkTestCaseBean;
 import com.monitor.argent.model.Result;
 import com.monitor.argent.service.HomeWorkRequestImpl;
-import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +22,6 @@ public class HomeWorkController {
 
     @Autowired
     HomeWorkRequestImpl homeWorkRequestImpl;
-    @Resource
-    UnitConversion unitConversion;
 
     private static final String HOME_WORK_HOST = "http://ai-image.staging.17zuoye.net";
     private static final String HOME_WORK_URL = "/DotMatrix/infer";
@@ -38,8 +33,8 @@ public class HomeWorkController {
 
     @RequestMapping(value = "/getHomeWork", method = RequestMethod.GET)
     @ResponseBody
-    public Result<Object> getHomeWorkRequest(@RequestParam("caseName") String caseName, @RequestParam("stage") int stage,
-                                             @RequestParam("subject") int subject, @NotNull @RequestParam("flag") int flag) {
+    public Result<Object> getHomeWorkRequest(@RequestParam("caseName") String caseName, @RequestParam(required = false, name = "stage") Integer stage,
+                                             @RequestParam(required = false, name = "subject") Integer subject, @RequestParam(name = "flag") int flag) {
 
         List<HomeWorkResponseBody> homeWorkResponseBodyList = homeWorkRequestImpl.getHomeWorkTestCase(caseName, stage, subject, flag);
         if (homeWorkResponseBodyList.isEmpty()) {
@@ -48,15 +43,15 @@ public class HomeWorkController {
         return Result.success(homeWorkResponseBodyList);
     }
 
-    @RequestMapping(value = "/addHomeWork", method = RequestMethod.POST)
+    /**
+     * 有ID更新，无ID新增
+     *
+     * @param homeWorkRequestBean
+     * @return
+     */
+    @RequestMapping(value = "/saveHomeWork", method = RequestMethod.POST)
     @ResponseBody
     public Result<Object> addHomeWorkRequest(@RequestBody HomeWorkRequestBean homeWorkRequestBean) {
-        return Result.success("");
-    }
-
-    @RequestMapping(value = "/editHomeWork", method = RequestMethod.POST)
-    @ResponseBody
-    public Result<Object> editHomeWorkRequest(@RequestBody HomeWorkResponseBody homeWorkResponseBody) {
         return Result.success("");
     }
 

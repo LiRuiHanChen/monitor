@@ -1,17 +1,17 @@
 package com.monitor.argent.entity;
 
-import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 
 @Data
 public class HomeWorkRequestBean {
 
+    int id;
     //学段
     int stage;
     //学科 SubjectEnum
     int subject;
     String caseName;
-    JSONObject requestBody;
+    String requestBody;
     Boolean flag;
     long createTime;
     long updateTime;
@@ -40,11 +40,11 @@ public class HomeWorkRequestBean {
         this.caseName = caseName;
     }
 
-    public JSONObject getRequestBody() {
+    public String getRequestBody() {
         return requestBody;
     }
 
-    public void setRequestBody(JSONObject requestBody) {
+    public void setRequestBody(String requestBody) {
         this.requestBody = requestBody;
     }
 
@@ -70,5 +70,13 @@ public class HomeWorkRequestBean {
 
     public void setUpdateTime(long updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

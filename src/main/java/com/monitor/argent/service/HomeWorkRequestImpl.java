@@ -22,7 +22,7 @@ public class HomeWorkRequestImpl {
     @Resource
     HttpRequestUtil httpRequestUtil;
 
-    public List<HomeWorkResponseBody> getHomeWorkTestCase(String caseName, int stage, int subject, int flag) {
+    public List<HomeWorkResponseBody> getHomeWorkTestCase(String caseName, Integer stage, Integer subject, int flag) {
         return homeWorkMapper.getHomeWorkTestCase(caseName, stage, subject, flag);
     }
 

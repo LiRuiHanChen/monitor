@@ -13,7 +13,7 @@ public interface HomeWorkMapper {
     int addHomeWorkTestCase(@Param("homeWorkRequestBean")HomeWorkRequestBean homeWorkRequestBean);
 
     // 查询
-    List<HomeWorkResponseBody> getHomeWorkTestCase(@Param("caseName") String caseName, @Param("stage") int stage, @Param("subject") int subject, @Param("flag") int flag);
+    List<HomeWorkResponseBody> getHomeWorkTestCase(@Param("caseName") String caseName, @Param("stage") Integer stage, @Param("subject") Integer subject, @Param("flag") int flag);
 
     // 修改需要指定ID
     int editHomeWorkTestCase(@Param("homeWorkResponseBody") HomeWorkResponseBody homeWorkResponseBody);
