@@ -2,7 +2,11 @@ package com.monitor.argent.commons;
 
 import com.alibaba.fastjson.JSONObject;
 import com.monitor.argent.entity.MemoryBean;
+import org.springframework.cglib.beans.BeanMap;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class UnitConversion {
@@ -45,4 +49,19 @@ public class UnitConversion {
         }
         return (JSONObject) JSONObject.toJSON(memoryBean);
     }
+
+    /**
+     * 将对象属性转化为map结合
+     */
+    public <T> Map<String, String> beanToMap(T bean) {
+        Map<String, String> map = new HashMap<>();
+        if (bean != null) {
+            BeanMap beanMap = BeanMap.create(bean);
+            for (Object key : beanMap.keySet()) {
+                map.put(key+"", (String) beanMap.get(key));
+            }
+        }
+        return map;
+    }
+
 }
