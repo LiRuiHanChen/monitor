@@ -30,8 +30,8 @@ public class HomeWorkRequestImpl {
         return homeWorkMapper.addHomeWorkTestCase(homeWorkRequestBean);
     }
 
-    public int editHomeWorkTestCase(HomeWorkResponseBody homeWorkResponseBody) {
-        return homeWorkMapper.editHomeWorkTestCase(homeWorkResponseBody);
+    public int editHomeWorkTestCase(HomeWorkRequestBean homeWorkRequestBean) {
+        return homeWorkMapper.editHomeWorkTestCase(homeWorkRequestBean);
     }
 
     public Map<String, String> runHomeWorkTestCase(String host, String url, String paramData, HashMap<String, String> headerMap) {

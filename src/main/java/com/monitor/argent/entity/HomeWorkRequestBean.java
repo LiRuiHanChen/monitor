@@ -2,6 +2,8 @@ package com.monitor.argent.entity;
 
 import lombok.Data;
 
+import java.util.Map;
+
 @Data
 public class HomeWorkRequestBean {
 
@@ -12,6 +14,7 @@ public class HomeWorkRequestBean {
     int subject;
     String caseName;
     String requestBody;
+    String expectValue;
     Boolean flag;
     long createTime;
     long updateTime;
@@ -78,5 +81,13 @@ public class HomeWorkRequestBean {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getExpectValue() {
+        return expectValue;
+    }
+
+    public void setExpectValue(String expectValue) {
+        this.expectValue = expectValue;
     }
 }

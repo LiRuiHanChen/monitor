@@ -1,7 +1,8 @@
 package com.monitor.argent.entity;
 
-import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
+
+import java.util.Map;
 
 @Data
 public class HomeWorkResponseBody {
@@ -13,6 +14,8 @@ public class HomeWorkResponseBody {
     int subject;
     String caseName;
     String requestBody;
+    // 转为map<subject_qid,tjudge>
+    String expectValue;
     Boolean flag;
     long createTime;
     long updateTime;
@@ -79,5 +82,13 @@ public class HomeWorkResponseBody {
 
     public void setUpdateTime(long updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getExpectValue() {
+        return expectValue;
+    }
+
+    public void setExpectValue(String expectValue) {
+        this.expectValue = expectValue;
     }
 }

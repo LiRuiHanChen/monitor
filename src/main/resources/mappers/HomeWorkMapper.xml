@@ -4,15 +4,16 @@
 
     <insert id="addHomeWorkTestCase" useGeneratedKeys="true" keyProperty="id"
             parameterType="com.monitor.argent.entity.HomeWorkRequestBean">
-        INSERT INTO check_homework
-        (subject, stage, case_name, request_body, flag, create_time, update_time)
-        VALUES (#{sub_ject,jdbcType=VARCHAR},
-                #{stage,jdbcType=VARCHAR},
-                #{case_name,jdbcType=VARCHAR},
-                #{request_body,jdbcType=VARCHAR},
-                #{flag,jdbcType=VARCHAR},
-                #{create_time,jdbcType=VARCHAR},
-                #{update_time,jdbcType=VARCHAR})
+        INSERT INTO check_homework (sub_ject, stage, case_name, expect_value,
+                                    request_body, flag, create_time, update_time)
+        VALUES (#{subject},
+                #{stage},
+                #{caseName},
+                #{expectValue},
+                #{requestBody},
+                #{flag},
+                #{createTime,jdbcType=VARCHAR},
+                #{updateTime,jdbcType=VARCHAR})
     </insert>
 
     <select id="getHomeWorkTestCase" resultType="com.monitor.argent.entity.HomeWorkResponseBody">
@@ -34,7 +35,9 @@
         </where>
     </select>
 
-    <update id="editHomeWorkTestCase" parameterType="com.monitor.argent.entity.HomeWorkRequestBean">
-        update
+    <update id="editHomeWorkTestCase" parameterType="com.monitor.argent.entity.HomeWorkRequestBean" flushCache="true">
+        update check_homework
+        set case_name = #{caseName}, expect_value=#{expectValue}, request_body =#{requestBody}
+        where id = #{id}
     </update>
 </mapper>
