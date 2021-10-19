@@ -45,4 +45,15 @@ public class HomeWorkRequestImpl {
         return null;
     }
 
+    public Map<String, String> getKinabaData(String host, String paramData, HashMap<String, String> headerMap) {
+        if (StringUtils.isEmpty(paramData)) return null;
+
+        try {
+            return httpRequestUtil.sendPostDataByJson(host.trim(), paramData, headerMap);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

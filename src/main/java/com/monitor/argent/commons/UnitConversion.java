@@ -58,10 +58,19 @@ public class UnitConversion {
         if (bean != null) {
             BeanMap beanMap = BeanMap.create(bean);
             for (Object key : beanMap.keySet()) {
-                map.put(key+"", (String) beanMap.get(key));
+                map.put(key + "", (String) beanMap.get(key));
             }
         }
         return map;
     }
 
+    public JSONObject createQueryJSON(String dzbId) {
+        JSONObject query = new JSONObject();
+        JSONObject match = new JSONObject();
+        JSONObject dzbJSON = new JSONObject();
+        dzbJSON.put("dzb_id", dzbId);
+        match.put("match", dzbJSON);
+        query.put("query", match);
+        return query;
+    }
 }

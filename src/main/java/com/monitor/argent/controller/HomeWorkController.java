@@ -3,6 +3,7 @@ package com.monitor.argent.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.monitor.argent.api.Code;
+import com.monitor.argent.commons.UnitConversion;
 import com.monitor.argent.entity.HomeWorkRequestBean;
 import com.monitor.argent.entity.HomeWorkResponseBody;
 import com.monitor.argent.model.Result;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +22,24 @@ public class HomeWorkController {
 
     @Autowired
     HomeWorkRequestImpl homeWorkRequestImpl;
+    @Resource
+    UnitConversion unitConversion;
 
     private static final String HOME_WORK_HOST = "http://ai-image.staging.17zuoye.net";
+    private static final String KIBANA_WORK_HOST = "http://10.8.14.85:5601/api/console/proxy?path=_search&method=POST";
     private static final String HOME_WORK_URL = "/DotMatrix/infer";
     private static HashMap HOME_WORK_HEADER_MAP = new HashMap();
+    private static HashMap KINABA_DATA_HEADER_MAP = new HashMap();
+
+    public void createKinHeaderMap() {
+        KINABA_DATA_HEADER_MAP.put("Content-Type", "application/json");
+        KINABA_DATA_HEADER_MAP.put("Accept", "text/plain, */*; q=0.01");
+        KINABA_DATA_HEADER_MAP.put("Accept-Encoding", "gzip, deflate");
+        KINABA_DATA_HEADER_MAP.put("Accept-Language", "zh-CN,zh;q=0.9");
+        KINABA_DATA_HEADER_MAP.put("Connection", "keep-alive");
+        KINABA_DATA_HEADER_MAP.put("kbn-version", "6.3.0");
+        KINABA_DATA_HEADER_MAP.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36");
+    }
 
     public static void createHeaderMap() {
         HOME_WORK_HEADER_MAP.put("Content-Type", "application/json");
@@ -110,5 +126,18 @@ public class HomeWorkController {
             }
         }
         return Result.success(result);
+    }
+
+    @RequestMapping(value = "/getKibanaWork", method = RequestMethod.GET)
+    @ResponseBody
+    public Result<Object> getKibanaWork(@RequestParam("dzbId") String dzbId) {
+        if (StringUtils.isEmpty(dzbId)) return Result.failure(Code.PARAMETER_MISSING, "参数为空");
+        JSONObject data = unitConversion.createQueryJSON(dzbId);
+
+        if (data == null) return Result.failure(Code.BAD_REQUEST, "参数异常");
+        createKinHeaderMap();
+
+        Map<String, String> kibanaResult = homeWorkRequestImpl.getKinabaData(KIBANA_WORK_HOST, data.toJSONString(), KINABA_DATA_HEADER_MAP);
+        return Result.success(kibanaResult);
     }
 }
