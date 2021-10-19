@@ -1,5 +1,6 @@
 package com.monitor.argent.commons;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.monitor.argent.entity.MemoryBean;
 import org.springframework.cglib.beans.BeanMap;
@@ -73,4 +74,13 @@ public class UnitConversion {
         query.put("query", match);
         return query;
     }
+
+    public JSONObject createPaperWidthData(String tqlId) {
+        JSONObject data = new JSONObject();
+        String[] strings = new String[1];
+        strings[0] = tqlId;
+        data.put("paramValues", strings);
+        return data;
+    }
+
 }

@@ -27,6 +27,7 @@ public class HomeWorkController {
 
     private static final String HOME_WORK_HOST = "http://ai-image.staging.17zuoye.net";
     private static final String KIBANA_WORK_HOST = "http://10.8.14.85:5601/api/console/proxy?path=_search&method=POST";
+    private static final String PAPER_WIDTH_WORK_HOST = "http://192.168.100.79:1889/?service=com.voxlearning.pour-point.service.task&method=getPicture&version=1.0.0&mode=legacy&group=alps-hydra-test";
     private static final String HOME_WORK_URL = "/DotMatrix/infer";
     private static HashMap HOME_WORK_HEADER_MAP = new HashMap();
     private static HashMap KINABA_DATA_HEADER_MAP = new HashMap();
@@ -41,7 +42,7 @@ public class HomeWorkController {
         KINABA_DATA_HEADER_MAP.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36");
     }
 
-    public static void createHeaderMap() {
+    public void createHeaderMap() {
         HOME_WORK_HEADER_MAP.put("Content-Type", "application/json");
     }
 
@@ -133,11 +134,25 @@ public class HomeWorkController {
     public Result<Object> getKibanaWork(@RequestParam("dzbId") String dzbId) {
         if (StringUtils.isEmpty(dzbId)) return Result.failure(Code.PARAMETER_MISSING, "参数为空");
         JSONObject data = unitConversion.createQueryJSON(dzbId);
+        JSONObject paperWidthData = unitConversion.createPaperWidthData(dzbId);
+        String paperWidth = null;
 
         if (data == null) return Result.failure(Code.BAD_REQUEST, "参数异常");
         createKinHeaderMap();
+        createHeaderMap();
 
         Map<String, String> kibanaResult = homeWorkRequestImpl.getKinabaData(KIBANA_WORK_HOST, data.toJSONString(), KINABA_DATA_HEADER_MAP);
+        // 获取paperWidth值
+        Map<String, String> paperWidthResult = homeWorkRequestImpl.getKinabaData(PAPER_WIDTH_WORK_HOST, paperWidthData.toJSONString(), HOME_WORK_HEADER_MAP);
+        if (paperWidthResult.get("code").equals("200")) {
+            String response = paperWidthResult.get("response");
+            JSONObject object = JSONObject.parseObject(response);
+            if (object.getIntValue("code") == 0) {
+                paperWidth = JSONObject.parseObject(object.get("data").toString()).getString("paperWidth");
+            }
+        }
+        kibanaResult.put("paperWidth", paperWidth);
+
         return Result.success(kibanaResult);
     }
 }
