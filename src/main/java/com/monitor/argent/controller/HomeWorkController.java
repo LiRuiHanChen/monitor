@@ -129,6 +129,26 @@ public class HomeWorkController {
         return Result.success(result);
     }
 
+    /**
+     * 调试自动生成的请求数据
+     *
+     * @param homeWorkRequestBean
+     * @return
+     */
+    @RequestMapping(value = "/testRequestTQL", method = RequestMethod.POST)
+    @ResponseBody
+    public Result<Object> testRequest(@RequestBody HomeWorkRequestBean homeWorkRequestBean) {
+        if (homeWorkRequestBean == null) return Result.failure(Code.PARAMETER_MISSING, "参数异常");
+        String testRequestData = homeWorkRequestBean.getRequestBody();
+        if (StringUtils.isEmpty(testRequestData)) return Result.failure(Code.PARAMETER_MISSING, "参数异常");
+
+        Map<String, String> resultMap = homeWorkRequestImpl.runHomeWorkTestCase(HOME_WORK_HOST, HOME_WORK_URL, testRequestData, HOME_WORK_HEADER_MAP);
+        if (resultMap.isEmpty()) return Result.failure(Code.PARAMETER_MISSING, "参数异常");
+
+        String response = resultMap.get("response");
+        return Result.success(response);
+    }
+
     @RequestMapping(value = "/getKibanaWork", method = RequestMethod.GET)
     @ResponseBody
     public Result<Object> getKibanaWork(@RequestParam("dzbId") String dzbId) {
@@ -136,6 +156,7 @@ public class HomeWorkController {
         JSONObject data = unitConversion.createQueryJSON(dzbId);
         JSONObject paperWidthData = unitConversion.createPaperWidthData(dzbId);
         String paperWidth = null;
+        String paperHeight = null;
 
         if (data == null) return Result.failure(Code.BAD_REQUEST, "参数异常");
         createKinHeaderMap();
@@ -149,9 +170,11 @@ public class HomeWorkController {
             JSONObject object = JSONObject.parseObject(response);
             if (object.getIntValue("code") == 0) {
                 paperWidth = JSONObject.parseObject(object.get("data").toString()).getString("paperWidth");
+                paperHeight = JSONObject.parseObject(object.get("data").toString()).getString("paperHeight");
             }
         }
         kibanaResult.put("paperWidth", paperWidth);
+        kibanaResult.put("paperHeight", paperHeight);
 
         return Result.success(kibanaResult);
     }
