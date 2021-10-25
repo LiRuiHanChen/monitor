@@ -84,11 +84,13 @@ public class HomeWorkController {
     @RequestMapping(value = "/runHomeWorkTestCase", method = RequestMethod.POST)
     @ResponseBody
     public Result<Object> runHomeWorkTestCase(@RequestBody List<HomeWorkRequestBean> homeWorkTestCaseBeanList) {
-        Map<String, Boolean> result = new HashMap<>();
+        Map<String,Map<String,Boolean>> map = new HashMap<>();
 
         if (homeWorkTestCaseBeanList.isEmpty()) return Result.failure(Code.PARAMETER_MISSING, "请求参数异常");
         for (HomeWorkRequestBean item : homeWorkTestCaseBeanList) {
             if (item == null) break;
+
+            Map<String, Boolean> result = new HashMap<>();
             String tempRequestData = item.getRequestBody();
             if (StringUtils.isEmpty(tempRequestData)) break;
 
@@ -123,10 +125,11 @@ public class HomeWorkController {
                     }
                 }
             } else {
-                result.put(item.getCaseName(), false);
+                result.put(String.valueOf(item.getId()), false);
             }
+            map.put(String.valueOf(item.getId()),result);
         }
-        return Result.success(result);
+        return Result.success(map);
     }
 
     /**
