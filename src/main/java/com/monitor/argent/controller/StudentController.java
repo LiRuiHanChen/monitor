@@ -7,7 +7,6 @@ import com.monitor.argent.entity.RegisterStudentResponse;
 import com.monitor.argent.entity.StudentRegisterBody;
 import com.monitor.argent.entity.StudentRegisterRequestBody;
 import com.monitor.argent.model.Result;
-import lombok.SneakyThrows;
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +33,7 @@ public class StudentController {
      * @param id 老师号
      * @return
      */
+    @CrossOrigin
     @RequestMapping(value = "/check/teacher", method = RequestMethod.POST)
     @ResponseBody
     public Result<Object> checkTeacher(@RequestParam String id) {
@@ -51,6 +51,7 @@ public class StudentController {
      * @throws IllegalAccessException
      * @throws NoSuchMethodException
      */
+    @CrossOrigin
     @RequestMapping(value = "/register/student", method = RequestMethod.POST)
     @ResponseBody
     public Result<Object> register(@RequestBody StudentRegisterBody studentRegisterBody) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
@@ -195,6 +196,7 @@ public class StudentController {
      * @param id 老师ID
      * @return
      */
+    @CrossOrigin
     @RequestMapping(value = "/signup/check/teacher/info", method = RequestMethod.POST)
     @ResponseBody
     public Result<Object> checkClazzInfo(@RequestParam String id) {
@@ -209,6 +211,7 @@ public class StudentController {
      * @param studentRegisterBody
      * @return
      */
+    @CrossOrigin
     @RequestMapping(value = "/signup/register", method = RequestMethod.POST)
     @ResponseBody
     public Result<Object> signupRegister(@RequestBody StudentRegisterBody studentRegisterBody) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {

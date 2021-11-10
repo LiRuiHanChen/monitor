@@ -219,11 +219,10 @@ public class StudentRequestUtil {
             headerMap.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36");
             Map<String, String> resultMap = httpRequestUtil.sendPostDataByMap(urlPath + requestPathInfo, headerMap, paramMap);
             if (!resultMap.isEmpty()) {
-                if (resultMap.get("code").equals("200")) {
-                    return Result.success(JSONObject.parseObject(resultMap.get("response")));
-                } else {
-                    return Result.failure(Integer.parseInt(resultMap.get("code")), resultMap.get("response"));
+                if (resultMap.get("code").equals("500")||resultMap.get("code").equals("502")) {
+                    return Result.success(resultMap.get("response"));
                 }
+                return Result.success(JSONObject.parseObject(resultMap.get("response")));
             }
         } catch (IOException e) {
             e.printStackTrace();
