@@ -48,6 +48,7 @@ public class HomeWorkController {
 
     @RequestMapping(value = "/getHomeWork", method = RequestMethod.GET)
     @ResponseBody
+    @CrossOrigin
     public Result<Object> getHomeWorkRequest(@RequestParam("caseName") String caseName, @RequestParam(required = false, name = "stage") Integer stage,
                                              @RequestParam(required = false, name = "subject") Integer subject, @RequestParam(name = "flag") int flag) {
 
@@ -64,6 +65,7 @@ public class HomeWorkController {
      * @param homeWorkRequestBean
      * @return
      */
+    @CrossOrigin
     @RequestMapping(value = "/saveHomeWork", method = RequestMethod.POST)
     @ResponseBody
     public Result<Object> addHomeWorkRequest(@RequestBody HomeWorkRequestBean homeWorkRequestBean) {
@@ -83,6 +85,7 @@ public class HomeWorkController {
 
     @RequestMapping(value = "/runHomeWorkTestCase", method = RequestMethod.POST)
     @ResponseBody
+    @CrossOrigin
     public Result<Object> runHomeWorkTestCase(@RequestBody List<HomeWorkRequestBean> homeWorkTestCaseBeanList) {
         Map<String,Map<String,Boolean>> map = new HashMap<>();
 
@@ -140,6 +143,7 @@ public class HomeWorkController {
      */
     @RequestMapping(value = "/testRequestTQL", method = RequestMethod.POST)
     @ResponseBody
+    @CrossOrigin
     public Result<Object> testRequest(@RequestBody HomeWorkRequestBean homeWorkRequestBean) {
         if (homeWorkRequestBean == null) return Result.failure(Code.PARAMETER_MISSING, "参数异常");
         String testRequestData = homeWorkRequestBean.getRequestBody();
@@ -154,6 +158,7 @@ public class HomeWorkController {
 
     @RequestMapping(value = "/getKibanaWork", method = RequestMethod.GET)
     @ResponseBody
+    @CrossOrigin
     public Result<Object> getKibanaWork(@RequestParam("dzbId") String dzbId) {
         if (StringUtils.isEmpty(dzbId)) return Result.failure(Code.PARAMETER_MISSING, "参数为空");
         JSONObject data = unitConversion.createQueryJSON(dzbId);
